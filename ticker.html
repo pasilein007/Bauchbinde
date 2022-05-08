@@ -43,6 +43,7 @@
 			let username = undefined; // Username
 			let rewardID = undefined; // Channel point reward ID
 			let channel = "(Channel name)"; // Channel
+			let enableCustomText4All = false; // Enable own ticker text for non-mods
 			var currentTicker;
 			
 			// Name
@@ -52,27 +53,20 @@
 			];
 			
 			// Age
-			const tickerAge = [
-				["18"],
-				["19"],
-				["20"],
-				["21"],
-				["22"],
-				["23"],
-				["24"],
-				["25"],
-				["26"],
-				["27"],
-				["28"],
-				["29"],
-				["30"],
-			];
+			const ageMin = 18;
+			const ageMax = 30;
 			
 			// Text
 			const tickerText = [
 				["Foo"],
 				["Bar"],
 			];
+			
+			// Random number between minumum to maximum
+			function randomBetween (nMin, nMax) {
+				const nRange = nMax-nMin+1;
+				return Math.floor(Math.random()*nRange+nMin);
+			}
 			
 			const handleMessage = (msg) => {
 				if (msg.event != "PRIVMSG") { return; }
@@ -85,9 +79,17 @@
 					}
 				}
 				
+				const args = msg.message.slice(1).split(' ');
+				const command = args.shift().toLowerCase();
+				
+				const badges = msg.tags.badges || {};
+				const isBroadcaster = badges.broadcaster;
+				const isMod = badges.moderator;
+				const isModUp = isMod || isBroadcaster;
+				
 				// Chat command (!ticker)
-				if (msg.message.startsWith("!ticker")) {
-					setTicker();
+				if (command === "ticker") {
+					setTicker(args.join(' '), isModUp);
 				}
 				
 				// Check chat connection
@@ -97,7 +99,7 @@
 			};
 			
 			// Function for ticker command
-			function setTicker() {
+			function setTicker(customTicker, modCheck) {
 				// Remove actual ticker when creating new ticker
 				console.log(currentTicker);
 				if (currentTicker != undefined) {
@@ -106,8 +108,12 @@
 				
 				// Randomize name, age and text
 				var writeName = tickerName[Math.floor(Math.random()*tickerName.length)];
-				var writeAge = tickerAge[Math.floor(Math.random()*tickerAge.length)];
-				var writeText = tickerText[Math.floor(Math.random()*tickerText.length)];
+				var writeAge = randomBetween(ageMin, ageMax);
+				if (customTicker != "" && (modCheck || enableCustomText4All)) {
+					var writeText = customTicker;
+				} else {
+					var writeText = tickerText[Math.floor(Math.random()*tickerText.length)];
+				}
 				
 				const tickerContainer = document.getElementById('tickerContainer');
 				
