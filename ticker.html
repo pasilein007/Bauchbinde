@@ -69,7 +69,7 @@
 			}
 			
 			const handleMessage = (msg) => {
-				if (msg.event != "PRIVMSG") { return; }
+				if (msg.event != "PRIVMSG" || !msg.message.startsWith("!")) { return; }
 				
 				if (rewardID != undefined) {
 					if (msg.tags.customRewardId != undefined) {
